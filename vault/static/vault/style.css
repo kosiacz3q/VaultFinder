@@ -1,0 +1,60 @@
+@font-face {
+    font-family: 'overseer';
+    src: url('fonts/Overseer Italic.otf') format("opentype");
+}
+
+body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
+html{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+
+    background: white url("images/background.gif") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.v-wrap{
+    height: 100%;
+    text-align: center;
+    white-space: nowrap;
+}
+.v-wrap:before{
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    margin-right: -.25em; /*might want to tweak this. .25em for extra white space */
+    height: 100%;
+}
+.v-box{
+    display: inline-block;
+    vertical-align: middle;
+    white-space: normal;
+    padding: 0 1em;
+    background: #7b7b7e;
+}
+
+.login-tittle {
+    width: 600px;
+    margin: auto;
+    text-align: center;
+    font-family: overseer;
+    font-size: 250%;
+}
+
+.login-quote {
+    width: 400px;
+    text-align: center;
+    margin: auto;
+    font-size: 80%;
+    font-family: "Ubuntu Condensed";
+    font-style: italic;
+}
