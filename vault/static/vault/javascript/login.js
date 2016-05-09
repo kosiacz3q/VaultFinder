@@ -1,5 +1,12 @@
 $(document).ready(function() {
-    $(".v-wrap-elo").fadeOut(1, function () {
-        $(".v-wrap-login-box").fadeIn(1);
+
+    $("#createAccountButton").click(function () {
+        $(".vbox-login").fadeOut(1, function () {
+            $(".vbox-create-user").fadeIn(1);
+        })
+    });
+
+    $(".vbox-intro-message").fadeOut(1, function () {
+        $(".vbox-login").fadeIn(1);
     });
 });

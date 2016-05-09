@@ -21,7 +21,7 @@ html{
     background-size: cover;
 }
 
-.v-wrap-elo:before{
+.vbox-intro-message:before{
     content: "";
     display: inline-block;
     vertical-align: middle;
@@ -30,20 +30,20 @@ html{
     height: 100%;
 }
 
-.v-wrap-elo{
+.vbox-intro-message{
     height: 100%;
     text-align: center;
     white-space: nowrap;
 }
 
-.v-wrap-login-box{
+.vbox-login{
     height: 100%;
     text-align: center;
     white-space: nowrap;
     display: none;
 }
 
-.v-wrap-login-box:before{
+.vbox-login:before{
     content: "";
     display: inline-block;
     vertical-align: middle;
@@ -51,7 +51,6 @@ html{
     margin-right: -.25em; /*might want to tweak this. .25em for extra white space */
     height: 100%;
 }
-
 
 .v-box{
     display: inline-block;
@@ -92,7 +91,38 @@ html{
     width: 90%;
 }
 
-.login-params {
+#login-params {
+    background-color: brown;
+    width: 100%;
+    height: 100%;
+}
+
+#createAccountButton {
+    height :64px;
+    width : 64px;
+    margin-right: 10px;
+    margin-top: 10px;
+    margin-left: auto;
+    float: right;
+}
+
+.vbox-create-user:before{
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    margin-right: -.25em; /*might want to tweak this. .25em for extra white space */
+    height: 100%;
+}
+
+.vbox-create-user{
+    height: 100%;
+    text-align: center;
+    white-space: nowrap;
+    display: none;
+}
+
+#create-user-params {
     background-color: brown;
     width: 100%;
     height: 100%;
