@@ -1,0 +1,15 @@
+
+<div class="userPanel">
+    <div class="userInformation">
+        <h1>{{user.username}}<br/>
+    </div>
+    <div class="operations">
+        <a href="{% url 'auth_logout' %}">logout</a>
+        <a href="{% url 'auth_password_change' %}">password change</a>
+        {% if vault.level > 20 %}
+        <a href="{% url 'vault:add_challange' %}">add challange</a>
+        {% endif %}
+    </div>
+
+</div>
+

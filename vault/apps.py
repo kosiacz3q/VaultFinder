@@ -1,5 +1,5 @@
 from django.apps import AppConfig
 
 
-class VaultConfig(AppConfig):
+class SpierdonConfig(AppConfig):
     name = 'vault'

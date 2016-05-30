@@ -1,13 +1,14 @@
 from django.conf.urls import url
 from . import views
 
-
-app_name = 'vault'
-
+"""
+URL patterns used by 'vault' app.
+"""
 urlpatterns = [
-    url(r'^$', views.login_view, name='login_view'),
-    url(r'vault$', views.find_vault, name='find_vault'),
-    url(r'^auth_view$', views.auth_view, name='auth_view'),
-    url(r'^create_user_view', views.create_user_view, name='create_user_view'),
-    url(r'^logout', views.logout_view, name='logout'),
-    ]
+    url(r'^$', views.index, name='index'),
+    url(r'^ranking/', views.ranking, name='ranking'),
+    url(r'^challenge/(?P<challenge_id>[0-9]+)/complete$', views.complete_challenge, name='complete_challenge'),
+    url(r'^challenge/(?P<challenge_id>[0-9]+)/join/', views.join_challenge, name='join_challenge'),
+    url(r'^challenge/new/', views.add_challenge, name='add_challange'),
+    url(r'^challenges/', views.get_challenges, name='get_challenges'),
+]

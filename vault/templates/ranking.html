@@ -1,0 +1,28 @@
+{% extends "base.html" %}
+{% block title %}Ranking{% endblock %}
+{% block content %}
+{% if has_public %}
+
+    <H1>Ranking</H1>
+<div class="ranking">
+    <table id="one-column-emphasis">
+        <tr>
+            <th>Nr</th>
+            <th>Name</th>
+            <th>Level</th>
+        </tr>
+        {% for item in items %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.user.username }}</td>
+            <td>{{ item.level }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+</div>
+{% else %}
+<p>Unfortunately, current ranking is available only for users who published their level.</p>
+{% endif %}
+{% endblock %}
+
+
