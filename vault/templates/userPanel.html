@@ -6,9 +6,7 @@
     <div class="operations">
         <a href="{% url 'auth_logout' %}">logout</a>
         <a href="{% url 'auth_password_change' %}">password change</a>
-        {% if vault.level > 20 %}
         <a href="{% url 'vault:add_challange' %}">add challange</a>
-        {% endif %}
     </div>
 
 </div>

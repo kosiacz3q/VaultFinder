@@ -1,4 +1,3 @@
-@import "bourbon";
 
 @import url(https://fonts.googleapis.com/css?family=Source+Sans+Pro:200,300,400,700);
 @import url(https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css);
@@ -107,26 +106,7 @@ a:hover, a:active {
     }
   }
 
-  form {
-    .input-group {
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      border-top: 1px solid rgba(255, 255, 255, 0.1);
 
-      &:last-of-type {
-        border-top: none;
-      }
-
-      span {
-        background: transparent;
-        min-width: 53px;
-        border: none;
-
-        i {
-          font-size: 1.5em;
-          color: rgba(255, 255, 255, 0.2);
-        }
-      }
-    }
 
     input.form-control {
       @include normalize-input;
@@ -400,4 +380,32 @@ div.ranking {
     justify-content: center;
     align-items: center;
     margin-bottom: 20px;
+}
+
+
+.param-title-small{
+    font-family: overseer;
+    width: 90%;
+}
+
+.centered-box-wrapper{
+    height: 100%;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.centered-box-wrapper:before{
+    content: "";
+    display: inline-block;
+    vertical-align: middle;
+    width: 0;
+    margin-right: -.25em; /*might want to tweak this. .25em for extra white space */
+    height: 100%;
+}
+
+.centered-box{
+    display: inline-block;
+    vertical-align: middle;
+    white-space: normal;
+    padding: 0 1em;
 }

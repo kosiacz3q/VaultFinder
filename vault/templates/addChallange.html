@@ -1,13 +1,49 @@
 {% extends "base.html" %}
-{% block title %}Welcome{% endblock %}
+
+{% load widget_tweaks %}
+
+{% block title %}Vault finding system{% endblock %}
+
+{% block head %}
+
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.11.4/themes/smoothness/jquery-ui.css">
+    <script src="//code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+
+    <script>
+        $(function() {
+            $("#id_date_start" ).datepicker();
+            $("#id_date_end" ).datepicker();
+        });
+    </script>
+
+{% endblock %}
 
 {% block content %}
 
-<div class="form">
-<form method="Post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Save</button>
-</form>
+<div class="centered-box-wrapper">
+    <div class="centered-box">
+
+        <form method="Post">
+            {% csrf_token %}
+
+            <p class="param-title-small">Contest name</p>
+            {{ form.name }}
+
+            <p class="param-title-small">Description</p>
+            {{ form.description }}
+
+            <p class="param-title-small">Date start</p>
+            {{ form.date_start}}
+
+            <p class="param-title-small">Date end</p>
+            {{ form.date_end }}
+
+            <p></p>
+            <button type="submit">Save</button>
+        </form>
+
+    </div>
 </div>
+
 {% endblock %}

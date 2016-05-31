@@ -39,13 +39,7 @@ def complete_challenge(request, challenge_id):
     :return: HttpResponseRedirect object
     """
 
-    challenge_to_complete = get_object_or_404(UserActiveChallenge, challenge__pk=challenge_id)
-
-    challenge_to_complete.completed = True
-    challenge_to_complete.save()
-
-    challenge_to_complete.user.exp += challenge_to_complete.challenge.exp;
-    challenge_to_complete.user.save();
+    challenge_to_complete = get_object_or_404(UserActiveContest, challenge__pk=challenge_id)
 
     return HttpResponseRedirect(reverse('vault:index'))
 
@@ -66,12 +60,7 @@ def ranking(request):
 
 @login_required
 def add_challenge(request):
-    """
-    Create add challenge form.
 
-    :param request: HttpRequest object
-    :return: HttpResponseRedirect object
-    """
     if request.method == 'POST':
         form = VaultForm(request.POST)
         if form.is_valid():
@@ -83,6 +72,7 @@ def add_challenge(request):
                 return HttpResponseRedirect('/')
             except:
                 pass
+
     return render_to_response('addChallange.html', {'form': VaultForm()},
                               context_instance=RequestContext(request))
 

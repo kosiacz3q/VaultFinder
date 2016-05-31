@@ -1,4 +1,11 @@
 {% extends "base.html" %}
+
+{% block head %}
+    {% load staticfiles %}
+    <script src="{% static 'vault/main-page.js' %}"></script>
+
+{% endblock %}
+
 {% block title %}Welcome{% endblock %}
 
 {% block content %}

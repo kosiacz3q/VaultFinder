@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.humanize',
     'registration',
     'vault',
+    'widget_tweaks',
 ]
 
 MIDDLEWARE_CLASSES = [
