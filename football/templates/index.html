@@ -1,0 +1,25 @@
+{% extends 'full.html' %}
+
+{% block title %}Tournament{% endblock %}
+
+{% block content %}
+{% load bootstrap3 %}
+
+<table class="table table-condensed">
+    <tr>
+        <td>Name</td>
+        <td>Date</td>
+        <td>Description</td>
+    </tr>
+    {% for item in aisites %}
+    <tr>
+        <td><a href="{% url 'football:detail' item.id %}">{{ item.name }}</a></td>
+        <td>{{ item.date }}</td>
+        <td>{{ item.description }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% bootstrap_pagination aisites url="?page={{ aisites.next_page_number }}" size="small" %}
+
+{% endblock %}

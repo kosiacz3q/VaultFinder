@@ -1,0 +1,112 @@
+{% extends "full.html" %}
+
+{% block title %}{{ aisite.name }} - details{% endblock %}
+
+{% block head %}
+{% load staticfiles %}
+<script src="{% static 'details/jquery.bracket.min.js' %}"></script>
+<link rel="stylesheet" type="text/css" href="{% static 'details/jquery.bracket.min.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+{% load bootstrap3 %}
+
+<div class="row">
+    <h1>{{ aisite.name }}</h1>
+</div>
+
+<div class="row" style="margin-top:10px;">
+    <div class="col-md-8">
+        <dl class="dl-horizontal">
+            <dt>Description</dt>
+            <dd>{{ aisite.description }}</dd>
+            <dt>Limit</dt>
+            <dd>{{ count }}/{{ aisite.limit }}</dd>
+            <dt>Deadline</dt>
+            <dd>{{ aisite.deadline }}</dd>
+            <dt>Start date</dt>
+            <dd>{{ aisite.date }}</dd>
+            <dt>Sponsors</dt>
+            {% for item in aisite.sponsors.all %}
+            <dd>{{ item.name }}</dd>
+            {% endfor %}
+        </dl>
+    </div>
+    <div class="col-md-4">
+        <img src="https://maps.googleapis.com/maps/api/staticmap?zoom=13&size=300x300&maptype=roadmap
+&markers=color:blue|{{ aisite.latitude }},{{ aisite.longitude }}" class="img-rounded"/>
+    </div>
+    {% if user.is_authenticated %}
+    <div>
+        <a class="btn btn-default{% if enrolled != 0 %} disabled{% endif %}" role="button"
+           {% if enrolled == 0 %}href="{% url 'football:join' aisite.id %}"{% endif %}>Enroll</a>
+        {% if user == aisite.organizer %}
+        <a class="btn btn-default" role="button" href="{% url 'football:edit' aisite.id %}">Edit</a>
+        {% endif %}
+    </div>
+    {% endif %}
+    <h3>Teams</h3>
+    <table class="table table-condensed">
+        <tr>
+            <td>#</td>
+            <td>Team</td>
+            <td>Coach</td>
+            <td>Ranking</td>
+        </tr>
+        {% for item in enrollments %}
+        <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>{{ item.user.team }}</a></td>
+            <td>{{ item.user }}</td>
+            <td>{{ item.ranking }}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a class="btn btn-default" role="button" href="{% url 'football:force_detail' aisite.id 1 %}">Start!</a>
+    {% if matches %}
+        <h3>Matches</h3>
+        <table class="table table-condensed">
+            <tr>
+                <td>Round</td>
+                <td>Team 1</td>
+                <td>Team 2</td>
+                <td>Result</td>
+            </tr>
+            {% for item in matches %}
+            <tr{% if item.player_1 == request.user or item.player_2 == request.user %} class="info"{% endif %}>
+                <td>{{ item.round.name }}</td>
+                <td{% if item.player_1 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_1.team }}</td>
+                <td{% if item.player_2 == item.winner %} style="font-weight: bold"{% endif %}>{{ item.player_2.team }}</td>
+                <td>
+                    {% if item.winner %}
+                        {{ item.score }}
+                    {% else %}
+                        {% if item.last_filled and item.last_filled == request.user %}
+                            Update
+                        {% elif item.player_1 == request.user or item.player_2 == request.user %}
+                            <a href="{% url 'football:update_match' item.id %}">Update</a>
+                        {% else %}
+                            -
+                        {% endif %}
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </table>
+        <div class="brackets">
+    </div>
+         <script type="text/javascript">
+             var data = {{ bracket }}
+             $('.brackets').bracket({
+                skipSecondaryFinal: false,
+                  init: data
+             });
+
+        </script>
+    {% endif %}
+
+</div>
+
+
+{% endblock %}
