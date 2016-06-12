@@ -31,7 +31,7 @@ class TournamentForm(forms.ModelForm):
         cleaned_data = super(TournamentForm, self).clean()
         form_date = cleaned_data.get("date")
         if timezone.now() > form_date:
-            self.add_error('date', "You cannot add aisite from past.")
+            self.add_error('date', "You cannot add overseer from past.")
 
         if cleaned_data.get("deadline") > form_date:
             self.add_error('deadline', "Deadline must start later than start date.")

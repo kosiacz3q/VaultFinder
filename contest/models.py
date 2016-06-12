@@ -47,12 +47,12 @@ class Tournament(models.Model):
 
 class Enrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    aisite = models.ForeignKey(Tournament)
+    overseer = models.ForeignKey(Tournament)
     ranking = models.IntegerField(unique=True)
     license_id = models.IntegerField(unique=True)
 
     def __str__(self):
-        return "%s joined %s" % (self.user, self.aisite.name)
+        return "%s joined %s" % (self.user, self.overseer.name)
 
 
 @receiver(user_registered)
@@ -63,7 +63,7 @@ def user_registered_handler(sender, user, request, **kwargs):
 
 
 class Round(models.Model):
-    aisite = models.ForeignKey(Tournament)
+    overseer = models.ForeignKey(Tournament)
     name = models.IntegerField(blank=False)
     # seeded = models.BooleanField()
 
@@ -103,14 +103,14 @@ class Match(models.Model):
             }'''
 
     @classmethod
-    def generate_json(cls, aisite):
+    def generate_json(cls, overseer):
         results = []
         teams = []
         # teams = [u.user for u in Enrollment.objects.filter(tou)
-        _round = Match.objects.filter(round__aisite=aisite).aggregate(Max('round__name'))['round__name__max']
+        _round = Match.objects.filter(round__overseer=overseer).aggregate(Max('round__name'))['round__name__max']
         if _round:
             for r in range(1, _round + 1):
-                matches = Match.objects.filter(round__name=str(r), round__aisite=aisite)
+                matches = Match.objects.filter(round__name=str(r), round__overseer=overseer)
                 scores = []
                 for m in matches:
                     if r == 1:
@@ -122,13 +122,13 @@ class Match(models.Model):
                     'results': results})
 
     @classmethod
-    def random_matches(cls, teams, aisite):
+    def random_matches(cls, teams, overseer):
         new_round = Round()
-        new_round.aisite = aisite
+        new_round.overseer = overseer
         new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
         new_round.save()
-        seeded_teams = teams[:aisite.seeded_players]
-        teams = teams[aisite.seeded_players:]
+        seeded_teams = teams[:overseer.seeded_players]
+        teams = teams[overseer.seeded_players:]
         for team in seeded_teams:
             opponent = random.choice(teams)
             match = Match.objects.create(round=new_round,
@@ -156,7 +156,7 @@ class Match(models.Model):
             teams.remove(team)
 
 
-def generate_aisite_bracket(sender, instance, created, **kwargs):
+def generate_overseer_bracket(sender, instance, created, **kwargs):
     if created or instance.tracker.previous('score') == '-':
         return
     if instance.tracker.has_changed('score') and instance.last_filled:
@@ -174,7 +174,7 @@ def generate_aisite_bracket(sender, instance, created, **kwargs):
             return
         pairs = zip(teams[::2], teams[1::2])
         new_round = Round()
-        new_round.aisite = instance.round.aisite
+        new_round.overseer = instance.round.overseer
         new_round.name = instance.round.name + 1
         new_round.save()
         for player_1, player_2 in pairs:
@@ -183,4 +183,4 @@ def generate_aisite_bracket(sender, instance, created, **kwargs):
                                  player_2=player_2)
 
 
-signals.post_save.connect(generate_aisite_bracket, sender=Match)
+signals.post_save.connect(generate_overseer_bracket, sender=Match)

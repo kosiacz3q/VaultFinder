@@ -14,50 +14,50 @@ def index(request):
     paginator = Paginator(Tournament.objects.all(), 10)
     page = request.GET.get('page')
     try:
-        aisites = paginator.page(page)
+        overseers = paginator.page(page)
     except PageNotAnInteger:
-        aisites = paginator.page(1)
+        overseers = paginator.page(1)
     except EmptyPage:
-        aisites = paginator.page(paginator.num_pages)
-    return render(request, 'index.html', {'aisites': aisites})
+        overseers = paginator.page(paginator.num_pages)
+    return render(request, 'index.html', {'overseers': overseers})
 
 
-def detail(request, aisite_id, force=0):
-    aisite = Tournament.objects.get(id=aisite_id)
-    count = Enrollment.objects.filter(aisite=aisite).count()
-    enrolled = Enrollment.objects.filter(aisite__pk=aisite_id, user__id=request.user.id).count()
+def detail(request, overseer_id, force=0):
+    overseer = Tournament.objects.get(id=overseer_id)
+    count = Enrollment.objects.filter(overseer=overseer).count()
+    enrolled = Enrollment.objects.filter(overseer__pk=overseer_id, user__id=request.user.id).count()
 
     if force:
-        Tournament.objects.filter(pk=aisite.pk).update(in_progress=False)
+        Tournament.objects.filter(pk=overseer.pk).update(in_progress=False)
 
-    if count == aisite.limit and not aisite.in_progress:
-        teams = [e.user for e in Enrollment.objects.filter(aisite=aisite).order_by('-ranking')]
-        Match.random_matches(teams, aisite)
-        Tournament.objects.filter(pk=aisite.pk).update(in_progress=True)
+    if count == overseer.limit and not overseer.in_progress:
+        teams = [e.user for e in Enrollment.objects.filter(overseer=overseer).order_by('-ranking')]
+        Match.random_matches(teams, overseer)
+        Tournament.objects.filter(pk=overseer.pk).update(in_progress=True)
 
     return render(request, "detail.html",
-                  {"aisite": aisite,
+                  {"overseer": overseer,
                    "count": count,
                    "enrolled": enrolled,
-                   "enrollments": Enrollment.objects.filter(aisite=aisite),
-                   "matches": Match.objects.filter(round__aisite=aisite).order_by('round__name'),
-                   "bracket": Match.generate_json(aisite)})
+                   "enrollments": Enrollment.objects.filter(overseer=overseer),
+                   "matches": Match.objects.filter(round__overseer=overseer).order_by('round__name'),
+                   "bracket": Match.generate_json(overseer)})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
-def join(request, aisite_id):
+def join(request, overseer_id):
     if request.method == "POST":
         form = EnrollForm(request.POST)
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
-            post.aisite = Tournament.objects.get(pk=aisite_id)
+            post.overseer = Tournament.objects.get(pk=overseer_id)
             post.save()
-            return redirect('football:detail', aisite_id=aisite_id)
+            return redirect('contest:detail', overseer_id=overseer_id)
     else:
         form = EnrollForm()
     return render(request, 'enroll.html', {'form': form,
-                                           'aisite_id': aisite_id})
+                                           'overseer_id': overseer_id})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
@@ -65,34 +65,34 @@ def create(request):
     if request.method == "POST":
         form = TournamentForm(request.POST)
         if form.is_valid():
-            aisite = form.save(commit=False)
-            aisite.organizer = request.user
-            aisite.save()
+            overseer = form.save(commit=False)
+            overseer.organizer = request.user
+            overseer.save()
             form.save_m2m()
-            return redirect('football:index')
+            return redirect('contest:index')
     else:
         form = TournamentForm()
     return render(request, 'create.html', {'form': form,
-                                           'label': 'Create aisite'})
+                                           'label': 'Create overseer'})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
-def edit(request, aisite_id):
-    aisite = Tournament.objects.filter(id=aisite_id)
-    if not aisite:
+def edit(request, overseer_id):
+    overseer = Tournament.objects.filter(id=overseer_id)
+    if not overseer:
         return HttpResponse("Tournament not exist!")
-    if aisite[0].organizer != request.user:
-        return HttpResponse("It's not your aisite!")
+    if overseer[0].organizer != request.user:
+        return HttpResponse("It's not your overseer!")
     if request.method == "POST":
-        form = TournamentForm(request.POST, instance=aisite[0])
+        form = TournamentForm(request.POST, instance=overseer[0])
         if form.is_valid():
             form.save()
-            return redirect('football:index')
+            return redirect('contest:index')
     else:
-        form = TournamentForm(instance=aisite[0])
+        form = TournamentForm(instance=overseer[0])
 
     return render(request, 'create.html', {'form': form,
-                                           'label': 'Edit aisite'})
+                                           'label': 'Edit overseer'})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
@@ -111,7 +111,7 @@ def update_match(request, match_id):
             match = form.save(commit=False)
             match.last_filled = request.user
             match.save()
-            return redirect('football:index')
+            return redirect('contest:index')
     else:
         form = MatchForm(instance=match)
     return render(request, 'create.html', {'form': form,

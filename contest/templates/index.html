@@ -11,15 +11,15 @@
         <td>Date</td>
         <td>Description</td>
     </tr>
-    {% for item in aisites %}
+    {% for item in overseers %}
     <tr>
-        <td><a href="{% url 'football:detail' item.id %}">{{ item.name }}</a></td>
+        <td><a href="{% url 'contest:detail' item.id %}">{{ item.name }}</a></td>
         <td>{{ item.date }}</td>
         <td>{{ item.description }}</td>
     </tr>
     {% endfor %}
 </table>
 
-{% bootstrap_pagination aisites url="?page={{ aisites.next_page_number }}" size="small" %}
+{% bootstrap_pagination overseers url="?page={{ overseers.next_page_number }}" size="small" %}
 
 {% endblock %}

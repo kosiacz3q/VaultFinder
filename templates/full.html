@@ -20,9 +20,9 @@
 <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
     <ul class="nav navbar-nav">
         {% if user.is_authenticated %}
-        <li class="active"><a href="{% url 'football:index' %}">Current</a></li>
+        <li class="active"><a href="{% url 'contest:index' %}">Current</a></li>
         <li><a href="#">Joined</a></li>
-        <li><a href="{% url 'football:create' %}">Add new</a></li>
+        <li><a href="{% url 'contest:create' %}">Add new</a></li>
         {% endif %}
     </ul>
     <ul class="nav navbar-nav navbar-right">

@@ -1,4 +1,4 @@
-"""aisite URL Configuration
+"""overseer URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/1.9/topics/http/urls/
@@ -19,5 +19,5 @@ from django.contrib import admin
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^accounts/', include('registration.backends.default.urls')),
-    url(r'^', include('football.urls', namespace='football'), name='main'),
+    url(r'^', include('contest.urls', namespace='contest'), name='main'),
 ]
