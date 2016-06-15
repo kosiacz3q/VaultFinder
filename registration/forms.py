@@ -25,7 +25,6 @@ class RegistrationForm(EmailUserCreationForm):
             User.USERNAME_FIELD,
             'first_name',
             'last_name',
-            'team',
             'password1',
             'password2'
         ]
@@ -51,7 +50,6 @@ class RegistrationForm(EmailUserCreationForm):
         user.email = self.cleaned_data['email']
         user.first_name = self.cleaned_data['first_name']
         user.last_name = self.cleaned_data['last_name']
-        user.team = self.cleaned_data['team']
 
         if commit:
             user.save()

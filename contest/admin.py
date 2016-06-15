@@ -10,7 +10,7 @@ class UserAdmin(EmailUserAdmin):
 # Register your models here.
 # admin.site.register(User)
 admin.site.register(User, UserAdmin)
-admin.site.register(Tournament)
+admin.site.register(OverseerContest)
 admin.site.register(Sponsor)
 admin.site.register(Enrollment)
 admin.site.register(Match)

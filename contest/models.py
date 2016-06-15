@@ -20,15 +20,14 @@ class Sponsor(models.Model):
 class User(AbstractEmailUser):
     first_name = models.CharField(max_length=50)
     last_name = models.CharField(max_length=50)
-    team = models.CharField(max_length=50, unique=True, null=False)
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['first_name', 'last_name', 'team']
+    REQUIRED_FIELDS = ['first_name', 'last_name']
 
     def __str__(self):
         return "%s %s" % (self.first_name, self.last_name)
 
 
-class Tournament(models.Model):
+class OverseerContest(models.Model):
     name = models.CharField(max_length=50)
     description = models.CharField(max_length=100)
     deadline = models.DateTimeField()
@@ -47,12 +46,12 @@ class Tournament(models.Model):
 
 class Enrollment(models.Model):
     user = models.ForeignKey(settings.AUTH_USER_MODEL)
-    overseer = models.ForeignKey(Tournament)
+    overseer_contest = models.ForeignKey(OverseerContest)
     ranking = models.IntegerField(unique=True)
     license_id = models.IntegerField(unique=True)
 
     def __str__(self):
-        return "%s joined %s" % (self.user, self.overseer.name)
+        return "%s joined %s" % (self.user, self.overseer_contest.name)
 
 
 @receiver(user_registered)
@@ -63,7 +62,7 @@ def user_registered_handler(sender, user, request, **kwargs):
 
 
 class Round(models.Model):
-    overseer = models.ForeignKey(Tournament)
+    overseer_contest = models.ForeignKey(OverseerContest)
     name = models.IntegerField(blank=False)
     # seeded = models.BooleanField()
 
@@ -80,51 +79,56 @@ class Match(models.Model):
 
     def __str__(self):
         return "round %d: %s - %s" % (
-            self.round.name, self.player_1.team, self.player_2.team)
+            self.round.name, self.player_1.first_name, self.player_2.first_name)
 
     '''
-                var singleElimination = {
-              "teams": [              // Matchups
-                ["Team 1", "Team 2"],
-                ["Team 3", "Team 4"],
-                ["Team 5", "Team 6"],
-                ["Team 7", "Team 8"],
+            var singleElimination = {
+              "names": [              // Matchups
+                ["name 1", "name 2"],
+                ["name 3", "name 4"],
+                ["name 5", "name 6"],
+                ["name 7", "name 8"],
               ],
               "results": [            // List of brackets (single elimination, so only one bracket)
                 [                     // List of rounds in bracket
                   [                   // First round in this bracket
-                    [1, 2],           // Team 1 vs Team 2
+                    [1, 2],           // name 1 vs name 2
                     [3, 4],
                     [5, 6],
                     [7, 8]
                   ],
                 ]
               ]
-            }'''
+            }
+    '''
 
     @classmethod
     def generate_json(cls, overseer):
         results = []
-        teams = []
-        # teams = [u.user for u in Enrollment.objects.filter(tou)
-        _round = Match.objects.filter(round__overseer=overseer).aggregate(Max('round__name'))['round__name__max']
+        duels = []
+
+        _round = Match.objects.filter(round__overseer_contest=overseer).aggregate(Max('round__name'))['round__name__max']
+
         if _round:
             for r in range(1, _round + 1):
-                matches = Match.objects.filter(round__name=str(r), round__overseer=overseer)
+                matches = Match.objects.filter(round__name=str(r), round__overseer_contest=overseer)
                 scores = []
                 for m in matches:
                     if r == 1:
-                        teams.append([m.player_1.team, m.player_2.team])
+                        duels.append([m.player_1.first_name, m.player_2.first_name])
+
                     score = m.score.split(':')
                     scores += [[int(score[0]), int(score[1])]]
+
                 results += [scores]
-        return str({'teams': teams,
+
+        return str({'teams': duels,
                     'results': results})
 
     @classmethod
     def random_matches(cls, teams, overseer):
         new_round = Round()
-        new_round.overseer = overseer
+        new_round.overseer_contest = overseer
         new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
         new_round.save()
         seeded_teams = teams[:overseer.seeded_players]
@@ -174,7 +178,7 @@ def generate_overseer_bracket(sender, instance, created, **kwargs):
             return
         pairs = zip(teams[::2], teams[1::2])
         new_round = Round()
-        new_round.overseer = instance.round.overseer
+        new_round.overseer_contest = instance.round.overseer
         new_round.name = instance.round.name + 1
         new_round.save()
         for player_1, player_2 in pairs:

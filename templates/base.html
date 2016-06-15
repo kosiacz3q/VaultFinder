@@ -9,6 +9,10 @@
     <title>{% block title %}{% endblock %}</title>
     {% bootstrap_css %}
     {% bootstrap_javascript jquery=1 %}
+
+    {% load staticfiles %}
+    <link rel="stylesheet" href="{% static "bootstrap3_datetime/css/customizations.css" %}">
+
     {% block head %}{% endblock %}
 </head>
 <body>

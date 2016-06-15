@@ -1,0 +1,45 @@
+@font-face {
+    font-family: 'overseer';
+    font-style: normal;
+    src: url('../fonts/OverseerItalic.otf') format("opentype");
+ }
+
+body{
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    padding-bottom: 30px;
+
+    background: white url("../images/background.jpeg") no-repeat center center fixed;
+    -webkit-background-size: cover;
+    -moz-background-size: cover;
+    -o-background-size: cover;
+    background-size: cover;
+}
+
+.main-title {
+    font-family: overseer, serif;
+    font-size: 48px;
+}
+
+.white-bg {
+    background-color: lightgray;
+    border-radius: 25px;
+    padding: 10px;
+}
+
+.btn:hover {
+    background-color: darkorange;
+    border-color: dimgray;
+    color: black;
+}
+
+.btn {
+    background-color: darkorange;
+    border-color: darkorange;
+    color: black;
+}
+
+.fallout-font {
+    font-family: overseer;
+}

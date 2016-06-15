@@ -1,7 +1,7 @@
 from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import Tournament, Enrollment, Sponsor, User, Match, Round
+from .models import OverseerContest, Enrollment, Sponsor, User, Match, Round
 from .forms import EnrollForm, TournamentForm, MatchForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
@@ -11,7 +11,7 @@ import random
 # Create your views here.
 
 def index(request):
-    paginator = Paginator(Tournament.objects.all(), 10)
+    paginator = Paginator(OverseerContest.objects.all(), 10)
     page = request.GET.get('page')
     try:
         overseers = paginator.page(page)
@@ -23,25 +23,25 @@ def index(request):
 
 
 def detail(request, overseer_id, force=0):
-    overseer = Tournament.objects.get(id=overseer_id)
-    count = Enrollment.objects.filter(overseer=overseer).count()
-    enrolled = Enrollment.objects.filter(overseer__pk=overseer_id, user__id=request.user.id).count()
+    overseer_contest = OverseerContest.objects.get(id=overseer_id)
+    count = Enrollment.objects.filter(overseer_contest=overseer_contest).count()
+    enrolled = Enrollment.objects.filter(overseer_contest__pk=overseer_id, user__id=request.user.id).count()
 
     if force:
-        Tournament.objects.filter(pk=overseer.pk).update(in_progress=False)
+        OverseerContest.objects.filter(pk=overseer_contest.pk).update(in_progress=False)
 
-    if count == overseer.limit and not overseer.in_progress:
-        teams = [e.user for e in Enrollment.objects.filter(overseer=overseer).order_by('-ranking')]
-        Match.random_matches(teams, overseer)
-        Tournament.objects.filter(pk=overseer.pk).update(in_progress=True)
+    if count == overseer_contest.limit and not overseer_contest.in_progress:
+        participants = [e.user for e in Enrollment.objects.filter(overseer_contest=overseer_contest).order_by('-ranking')]
+        Match.random_matches(participants, overseer_contest)
+        OverseerContest.objects.filter(pk=overseer_contest.pk).update(in_progress=True)
 
     return render(request, "detail.html",
-                  {"overseer": overseer,
+                  {"overseer_contest": overseer_contest,
                    "count": count,
                    "enrolled": enrolled,
-                   "enrollments": Enrollment.objects.filter(overseer=overseer),
-                   "matches": Match.objects.filter(round__overseer=overseer).order_by('round__name'),
-                   "bracket": Match.generate_json(overseer)})
+                   "enrollments": Enrollment.objects.filter(overseer_contest=overseer_contest),
+                   "matches": Match.objects.filter(round__overseer_contest=overseer_contest).order_by('round__name'),
+                   "bracket": Match.generate_json(overseer_contest)})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
@@ -51,7 +51,7 @@ def join(request, overseer_id):
         if form.is_valid():
             post = form.save(commit=False)
             post.user = request.user
-            post.overseer = Tournament.objects.get(pk=overseer_id)
+            post.overseer_contest = OverseerContest.objects.get(pk=overseer_id)
             post.save()
             return redirect('contest:detail', overseer_id=overseer_id)
     else:
@@ -73,16 +73,16 @@ def create(request):
     else:
         form = TournamentForm()
     return render(request, 'create.html', {'form': form,
-                                           'label': 'Create overseer'})
+                                           'label': 'Create Overseer Contest'})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
 def edit(request, overseer_id):
-    overseer = Tournament.objects.filter(id=overseer_id)
+    overseer = OverseerContest.objects.filter(id=overseer_id)
     if not overseer:
-        return HttpResponse("Tournament not exist!")
+        return HttpResponse("OverseerContest not exist!")
     if overseer[0].organizer != request.user:
-        return HttpResponse("It's not your overseer!")
+        return HttpResponse("It's not your overseer_contest!")
     if request.method == "POST":
         form = TournamentForm(request.POST, instance=overseer[0])
         if form.is_valid():
@@ -92,7 +92,7 @@ def edit(request, overseer_id):
         form = TournamentForm(instance=overseer[0])
 
     return render(request, 'create.html', {'form': form,
-                                           'label': 'Edit overseer'})
+                                           'label': 'Edit overseer contest'})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))

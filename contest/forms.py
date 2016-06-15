@@ -1,5 +1,5 @@
 from django import forms
-from .models import Enrollment, Tournament, Sponsor, Match
+from .models import Enrollment, OverseerContest, Sponsor, Match
 from bootstrap3_datetime.widgets import DateTimePicker
 from datetime import date
 from django.utils import timezone
@@ -17,7 +17,7 @@ class TournamentForm(forms.ModelForm):
                                               widget=forms.CheckboxSelectMultiple)
 
     class Meta:
-        model = Tournament
+        model = OverseerContest
         # fields = ('name', 'description', 'deadline', 'date', 'longitude', 'latitude', 'limit', 'seeded_players', '')
         exclude = ['organizer']
         widgets = {
@@ -31,7 +31,7 @@ class TournamentForm(forms.ModelForm):
         cleaned_data = super(TournamentForm, self).clean()
         form_date = cleaned_data.get("date")
         if timezone.now() > form_date:
-            self.add_error('date', "You cannot add overseer from past.")
+            self.add_error('date', "You cannot add overseer_contest from past.")
 
         if cleaned_data.get("deadline") > form_date:
             self.add_error('deadline', "Deadline must start later than start date.")
