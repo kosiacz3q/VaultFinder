@@ -63,128 +63,122 @@ def user_registered_handler(sender, user, request, **kwargs):
 
 class Round(models.Model):
     overseer_contest = models.ForeignKey(OverseerContest)
-    name = models.IntegerField(blank=False)
+    name = models.IntegerField(blank=False, default=1)
     # seeded = models.BooleanField()
 
 
-class Match(models.Model):
+class Duel(models.Model):
     round = models.ForeignKey(Round, related_name="round")
     player_1 = models.ForeignKey(User, related_name="player_1")
     player_2 = models.ForeignKey(User, related_name="player_2")
     winner = models.ForeignKey(User, null=True, blank=True, related_name="winner")
-    score = models.CharField(max_length=5, null=False, default='-')
+    score = models.CharField(max_length=5, null=False, default="0:0")
     tracker = FieldTracker()
     last_filled = models.ForeignKey(User, related_name="last_filled", null=True, blank=True)
-    next_match = models.ForeignKey('self', related_name="later_match", null=True, blank=True)
+    next_duel = models.ForeignKey('self', related_name="later_duel", null=True, blank=True)
 
     def __str__(self):
         return "round %d: %s - %s" % (
             self.round.name, self.player_1.first_name, self.player_2.first_name)
 
-    '''
-            var singleElimination = {
-              "names": [              // Matchups
-                ["name 1", "name 2"],
-                ["name 3", "name 4"],
-                ["name 5", "name 6"],
-                ["name 7", "name 8"],
-              ],
-              "results": [            // List of brackets (single elimination, so only one bracket)
-                [                     // List of rounds in bracket
-                  [                   // First round in this bracket
-                    [1, 2],           // name 1 vs name 2
-                    [3, 4],
-                    [5, 6],
-                    [7, 8]
-                  ],
-                ]
-              ]
-            }
-    '''
-
     @classmethod
-    def generate_json(cls, overseer):
+    def generate_json(cls, overseer_contest):
         results = []
-        duels = []
+        json_duels = []
 
-        _round = Match.objects.filter(round__overseer_contest=overseer).aggregate(Max('round__name'))['round__name__max']
+        _round = Duel.objects.filter(round__overseer_contest=overseer_contest).aggregate(Max('round__name'))['round__name__max']
 
         if _round:
             for r in range(1, _round + 1):
-                matches = Match.objects.filter(round__name=str(r), round__overseer_contest=overseer)
+                duels = Duel.objects.filter(round__name=str(r), round__overseer_contest=overseer_contest)
                 scores = []
-                for m in matches:
+
+                for m in duels:
                     if r == 1:
-                        duels.append([m.player_1.first_name, m.player_2.first_name])
+                        left = "TBA" if m.player_1 is None else (m.player_1.first_name + m.player_1.email)
+                        right = "TBA" if m.player_2 is None else (m.player_2.first_name + m.player_2.email)
+                        json_duels.append([left, right])
 
-                    score = m.score.split(':')
-                    scores += [[int(score[0]), int(score[1])]]
+                    real_score = [0,0]
 
-                results += [scores]
+                    if m.score == "-":
+                        m.score = "0:0"
 
-        return str({'teams': duels,
-                    'results': results})
+                    if m.winner is not None:
+                        real_score = m.score.split(':')
+
+                    scores += [[int(real_score[0]), int(real_score[1])]]
+
+                if len(scores) > 0:
+                    results += [scores]
+
+        return str({'teams': json_duels, 'results': results})
 
     @classmethod
-    def random_matches(cls, teams, overseer):
+    def random_matches(cls, participators, overseer_contest):
         new_round = Round()
-        new_round.overseer_contest = overseer
+        new_round.overseer_contest = overseer_contest
         new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
         new_round.save()
-        seeded_teams = teams[:overseer.seeded_players]
-        teams = teams[overseer.seeded_players:]
+        seeded_teams = participators[:overseer_contest.seeded_players]
+        participators = participators[overseer_contest.seeded_players:]
+
         for team in seeded_teams:
-            opponent = random.choice(teams)
-            match = Match.objects.create(round=new_round,
-                                         player_1=team,
-                                         player_2=opponent)
+            opponent = random.choice(participators)
+            duel = Duel.objects.create(round=new_round, player_1=team, player_2=opponent)
             if new_round.name != 1:
-                Match.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
-                    next_match=match
+                Duel.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
+                    next_duel=duel
                 )
-            teams.remove(opponent)
-        while len(teams) != 0:
-            team = random.choice(teams)
+            participators.remove(opponent)
+
+        while len(participators) != 0:
+            team = random.choice(participators)
             while True:
-                opponent = random.choice(teams)
+                opponent = random.choice(participators)
                 if team != opponent:
                     break
-            match = Match.objects.create(round=new_round,
-                                         player_1=team,
-                                         player_2=opponent)
+            duel = Duel.objects.create(round=new_round, player_1=team, player_2=opponent)
+
             if new_round.name != 1:
-                Match.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
-                    next_match=match
+                Duel.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
+                    next_duel=duel
                 )
-            teams.remove(opponent)
-            teams.remove(team)
+            participators.remove(opponent)
+            participators.remove(team)
 
 
 def generate_overseer_bracket(sender, instance, created, **kwargs):
-    if created or instance.tracker.previous('score') == '-':
+    if created or instance.tracker.previous('score') == '0:0':
         return
+
     if instance.tracker.has_changed('score') and instance.last_filled:
         sender.objects.filter(pk=instance.pk).update(winner=None,
-                                                     score='-',
+                                                     score='0:0',
                                                      last_filled=None)
         return
+
     score = instance.score.split(':')
-    winner = instance.player_1 if int(score[0]) > int(score[1]) else instance.player_2
-    sender.objects.filter(pk=instance.pk).update(winner=winner)
+
+    if score[0] != '0' or score[1] != '0':
+        winner = instance.player_1 if int(score[0]) > int(score[1]) else instance.player_2
+        sender.objects.filter(pk=instance.pk).update(winner=winner)
+
     unfinished = sender.objects.filter(winner__isnull=True, round=instance.round)
+
     if unfinished.count() == 0:
-        teams = [e.winner for e in Match.objects.filter(round=instance.round)]
+        teams = [e.winner for e in Duel.objects.filter(round=instance.round)]
+
         if len(teams) == 1:
             return
+
         pairs = zip(teams[::2], teams[1::2])
         new_round = Round()
-        new_round.overseer_contest = instance.round.overseer
+        new_round.overseer_contest = instance.round.overseer_contest
         new_round.name = instance.round.name + 1
         new_round.save()
         for player_1, player_2 in pairs:
-            Match.objects.create(round=new_round,
-                                 player_1=player_1,
-                                 player_2=player_2)
+            Duel.objects.create(round=new_round, player_1=player_1, player_2=player_2)
 
 
-signals.post_save.connect(generate_overseer_bracket, sender=Match)
+signals.post_save.connect(generate_overseer_bracket, sender=Duel)

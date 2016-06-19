@@ -7,7 +7,9 @@
 {% load widget_tweaks %}
 
 <h2 class="form-signin-heading fallout-font">{{ label }}</h2>
+
 {{ form.media }}
+
 <form class="form-signin white-bg" method="post" action="">
     {% csrf_token %}
     {% load bootstrap %}

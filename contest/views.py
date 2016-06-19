@@ -1,12 +1,11 @@
 from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .models import OverseerContest, Enrollment, Sponsor, User, Match, Round
-from .forms import EnrollForm, TournamentForm, MatchForm
+from .models import OverseerContest, Enrollment, Sponsor, User, Duel, Round
+from .forms import EnrollForm, OverseerContestForm, DuelForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import random
-
 
 # Create your views here.
 
@@ -32,7 +31,7 @@ def detail(request, overseer_id, force=0):
 
     if count == overseer_contest.limit and not overseer_contest.in_progress:
         participants = [e.user for e in Enrollment.objects.filter(overseer_contest=overseer_contest).order_by('-ranking')]
-        Match.random_matches(participants, overseer_contest)
+        Duel.random_matches(participants, overseer_contest)
         OverseerContest.objects.filter(pk=overseer_contest.pk).update(in_progress=True)
 
     return render(request, "detail.html",
@@ -40,8 +39,8 @@ def detail(request, overseer_id, force=0):
                    "count": count,
                    "enrolled": enrolled,
                    "enrollments": Enrollment.objects.filter(overseer_contest=overseer_contest),
-                   "matches": Match.objects.filter(round__overseer_contest=overseer_contest).order_by('round__name'),
-                   "bracket": Match.generate_json(overseer_contest)})
+                   "matches": Duel.objects.filter(round__overseer_contest=overseer_contest).order_by('round__name'),
+                   "bracket": Duel.generate_json(overseer_contest)})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
@@ -63,7 +62,7 @@ def join(request, overseer_id):
 @login_required(login_url=reverse_lazy('auth_login'))
 def create(request):
     if request.method == "POST":
-        form = TournamentForm(request.POST)
+        form = OverseerContestForm(request.POST)
         if form.is_valid():
             overseer = form.save(commit=False)
             overseer.organizer = request.user
@@ -71,7 +70,7 @@ def create(request):
             form.save_m2m()
             return redirect('contest:index')
     else:
-        form = TournamentForm()
+        form = OverseerContestForm()
     return render(request, 'create.html', {'form': form,
                                            'label': 'Create Overseer Contest'})
 
@@ -84,35 +83,39 @@ def edit(request, overseer_id):
     if overseer[0].organizer != request.user:
         return HttpResponse("It's not your overseer_contest!")
     if request.method == "POST":
-        form = TournamentForm(request.POST, instance=overseer[0])
+        form = OverseerContestForm(request.POST, instance=overseer[0])
         if form.is_valid():
             form.save()
             return redirect('contest:index')
     else:
-        form = TournamentForm(instance=overseer[0])
+        form = OverseerContestForm(instance=overseer[0])
 
     return render(request, 'create.html', {'form': form,
                                            'label': 'Edit overseer contest'})
 
 
 @login_required(login_url=reverse_lazy('auth_login'))
-def update_match(request, match_id):
-    match = Match.objects.filter(id=match_id)[0] if Match.objects.filter(id=match_id) else None
-    if not match:
-        return HttpResponse("Match not exist!")
-    if match.player_1 != request.user and match.player_2 != request.user:
-        return HttpResponse("It's not your match!")
-    # fill = match.fill_1 if match.player_2 == request.user else match.fill_2
-    if match.last_filled == request.user:
+def update_duel(request, duel_id):
+
+    duel = Duel.objects.filter(id=duel_id)[0] if Duel.objects.filter(id=duel_id) else None
+
+    if not duel:
+        return HttpResponse("Duel not exist!")
+
+    if duel.player_1 != request.user and duel.player_2 != request.user:
+        return HttpResponse("It's not your duel!")
+
+    if duel.last_filled == request.user:
         return HttpResponse("You already fill!")
+
     if request.method == "POST":
-        form = MatchForm(request.POST, instance=match)
+        form = DuelForm(request.POST, instance=duel)
         if form.is_valid():
-            match = form.save(commit=False)
-            match.last_filled = request.user
-            match.save()
+            duel = form.save(commit=False)
+            duel.last_filled = request.user
+            duel.save()
             return redirect('contest:index')
     else:
-        form = MatchForm(instance=match)
+        form = DuelForm(instance=duel)
     return render(request, 'create.html', {'form': form,
-                                           'label': 'Update match'})
+                                           'label': 'Update duel'})

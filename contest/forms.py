@@ -1,5 +1,5 @@
 from django import forms
-from .models import Enrollment, OverseerContest, Sponsor, Match
+from .models import Enrollment, OverseerContest, Sponsor, Duel
 from bootstrap3_datetime.widgets import DateTimePicker
 from datetime import date
 from django.utils import timezone
@@ -11,7 +11,7 @@ class EnrollForm(forms.ModelForm):
         fields = ('ranking', 'license_id',)
 
 
-class TournamentForm(forms.ModelForm):
+class OverseerContestForm(forms.ModelForm):
     sponsors = forms.ModelMultipleChoiceField(queryset=Sponsor.objects.all(),
                                               required=False,
                                               widget=forms.CheckboxSelectMultiple)
@@ -28,7 +28,7 @@ class TournamentForm(forms.ModelForm):
         }
 
     def clean(self):
-        cleaned_data = super(TournamentForm, self).clean()
+        cleaned_data = super(OverseerContestForm, self).clean()
         form_date = cleaned_data.get("date")
         if timezone.now() > form_date:
             self.add_error('date', "You cannot add overseer_contest from past.")
@@ -37,7 +37,7 @@ class TournamentForm(forms.ModelForm):
             self.add_error('deadline', "Deadline must start later than start date.")
 
 
-class MatchForm(forms.ModelForm):
+class DuelForm(forms.ModelForm):
     class Meta:
-        model = Match
+        model = Duel
         fields = ('score',)

@@ -1,16 +1,16 @@
 {% extends 'full.html' %}
 
-{% block title %}Tournament{% endblock %}
+{% block title %}Overseer Contests{% endblock %}
 
 {% block content %}
 {% load bootstrap3 %}
 
     <div class="white-bg">
         <table class="table table-hover">
-            <tr>
-                <td>Name</td>
-                <td>Date</td>
-                <td>Description</td>
+            <tr class="fallout-font ">
+                <td><h3>Name</h3></td>
+                <td><h3>Date</h3></td>
+                <td><h3>Description</h3></td>
             </tr>
             {% for item in overseers %}
                 <tr>
