@@ -36,7 +36,6 @@ class OverseerContest(models.Model):
     latitude = models.FloatField()
     sponsors = models.ManyToManyField(Sponsor, blank=True)
     limit = models.IntegerField()
-    seeded_players = models.IntegerField()
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL)
     in_progress = models.BooleanField(default=False)
 
@@ -120,8 +119,7 @@ class Duel(models.Model):
         new_round.overseer_contest = overseer_contest
         new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
         new_round.save()
-        seeded_teams = participators[:overseer_contest.seeded_players]
-        participators = participators[overseer_contest.seeded_players:]
+        seeded_teams = participators
 
         for team in seeded_teams:
             opponent = random.choice(participators)
@@ -131,21 +129,6 @@ class Duel(models.Model):
                     next_duel=duel
                 )
             participators.remove(opponent)
-
-        while len(participators) != 0:
-            team = random.choice(participators)
-            while True:
-                opponent = random.choice(participators)
-                if team != opponent:
-                    break
-            duel = Duel.objects.create(round=new_round, player_1=team, player_2=opponent)
-
-            if new_round.name != 1:
-                Duel.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
-                    next_duel=duel
-                )
-            participators.remove(opponent)
-            participators.remove(team)
 
 
 def generate_overseer_bracket(sender, instance, created, **kwargs):

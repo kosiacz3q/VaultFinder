@@ -1,0 +1,18 @@
+{% extends 'form.html' %}
+
+{% block title %}Create sponsor{% endblock %}
+
+{% block form %}
+{% load bootstrap3 %}
+{% load bootstrap %}
+
+<h2 class="form-signin-heading">Add sponsor</h2>
+<form class="form-signin" method="post" action="">
+    {% csrf_token %}
+    {% load bootstrap %}
+    <p class="help-block"></p>
+    {{ form|bootstrap }}
+    <button class="btn btn-lg btn-primary btn-block" type="submit">Submit</button>
+</form>
+
+{% endblock %}

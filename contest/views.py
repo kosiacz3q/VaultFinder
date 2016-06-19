@@ -2,12 +2,11 @@ from django.shortcuts import render_to_response, redirect, render
 from django.core.urlresolvers import reverse_lazy
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .models import OverseerContest, Enrollment, Sponsor, User, Duel, Round
-from .forms import EnrollForm, OverseerContestForm, DuelForm
+from .forms import EnrollForm, OverseerContestForm, DuelForm, SponsorForm
 from django.contrib.auth.decorators import login_required
 from django.http import HttpResponse
 import random
 
-# Create your views here.
 
 def index(request):
     paginator = Paginator(OverseerContest.objects.all(), 10)
@@ -119,3 +118,30 @@ def update_duel(request, duel_id):
         form = DuelForm(instance=duel)
     return render(request, 'create.html', {'form': form,
                                            'label': 'Update duel'})
+
+
+def search(request):
+    if request.GET and request.GET['query']:
+        paginator = Paginator(OverseerContest.objects.filter(name__contains=request.GET['query']), 10)
+        page = request.GET.get('page')
+        try:
+            tournaments = paginator.page(page)
+        except PageNotAnInteger:
+            tournaments = paginator.page(1)
+        except EmptyPage:
+            tournaments = paginator.page(paginator.num_pages)
+        return render(request, 'index.html', {'overseers': tournaments})
+    else:
+        return redirect('contest:index')
+
+
+@login_required(login_url=reverse_lazy('auth_login'))
+def add_sponsor(request):
+    if request.method == "POST":
+        form = SponsorForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('contest:index')
+    else:
+        form = SponsorForm()
+    return render(request, 'sponsor.html', {'form': form})

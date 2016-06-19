@@ -6,6 +6,7 @@
 {% load staticfiles %}
 <script src="{% static 'bootstrap3_datetime/js/jquery.bracket.min.js' %}"></script>
 <link rel="stylesheet" type="text/css" href="{% static 'bootstrap3_datetime/css/jquery.bracket.min.css' %}" />
+
 {% endblock %}
 
 {% block content %}
@@ -18,8 +19,9 @@
 
 <div class="row" style="margin-top:10px;">
 
+    <h1 class="fallout-font">Description</h1>
     <div class="container-fluid white-bg" style="margin-bottom:10px;">
-        <h3 class="fallout-font">Description</h3>
+
         <div>
             <div class = "col-md-6 text-center">
                 <dl class="dl-horizontal">
@@ -31,12 +33,6 @@
                     <dd>{{ overseer_contest.deadline }}</dd>
                     <dt>Start date</dt>
                     <dd>{{ overseer_contest.date }}</dd>
-                    <dt>Sponsors</dt>
-                    {% for item in overseer_contest.sponsors.all %}
-                    <dd>{{ item.name }}</dd>
-                    {% load static %}
-                    <dd><img style="width: 150px; height: 150px;" src="{% static  item.picture.url %}"></dd>
-                    {% endfor %}
                 </dl>
             </div>
             <div class = "col-md-6 text-center">
@@ -44,12 +40,24 @@
                      class="img-rounded"/>
             </div>
         </div>
-
-
     </div>
 
+    <h1 class="fallout-font">Sponsors</h1>
     <div class="white-bg" >
-        <h3 class="fallout-font">Actions</h3>
+
+        <div class="row" style="padding-left: 5%">
+            {% for item in overseer_contest.sponsors.all %}
+                <div class="col-sm-2">
+                    {% load static %}
+                    <img style="width: 150px; height: 150px;" src="{% static  item.picture.url %}" alt="{{ item.name }}">
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <h1 class="fallout-font">Actions</h1>
+    <div class="white-bg" >
+
 
         <div style="padding-left: 10%">
 
@@ -65,8 +73,9 @@
     </div>
 
 
+    <h1 class="fallout-font">Participants of Overseer contest</h1>
     <div class="white-bg">
-        <h3 class="fallout-font">Participants of Overseer contest</h3>
+
         <table class="table table-condensed">
             <tr>
                 <td>#</td>
@@ -84,8 +93,9 @@
     </div>
 
     {% if matches %}
+        <h1 class="fallout-font">Duels</h1>
         <div class="white-bg">
-            <h3 class="fallout-font">Duels</h3>
+
             <table class="table table-condensed">
                 <tr>
                     <td>Round</td>
@@ -97,8 +107,8 @@
                 {% for item in matches %}
                 <tr{% if item.player_1 == request.user or item.player_2 == request.user %} class="info"{% endif %}>
                     <td>{{ item.round.name }}</td>
-                    <td{% if item.player_1 == item.winner %} style="color: green; font-weight: bold"{% endif %}>{{ item.player_1.email }}</td>
-                    <td{% if item.player_2 == item.winner %} style="color: green; font-weight: bold"{% endif %}>{{ item.player_2.email }}</td>
+                    <td{% if item.player_1 == item.winner %} style="color: green; font-weight: bold"{% endif %}>{{ item.player_1.first_name}} {{ item.player_1.last_name}}</td>
+                    <td{% if item.player_2 == item.winner %} style="color: green; font-weight: bold"{% endif %}>{{ item.player_2.first_name}} {{ item.player_2.last_name}}</td>
                     <td>
                         {% if item.winner %}
                             {{ item.score }}
@@ -119,8 +129,9 @@
 
         </div>
 
+        <h1 class="fallout-font">Brackets</h1>
         <div class="white-bg">
-            <h3 class="fallout-font">Brackets</h3>
+
             <div class="brackets ">
             </div>
         </div>
@@ -134,31 +145,6 @@
                 init: data
             });
         </script>
-
-        <!---
-        <div class="brackets2 white-bg">
-            </div>
-        <script type="text/javascript">
-
-                 var data = {
-                      "teams": [
-                        ["l1", "l4"],
-                        ["l2", "l3"]
-                      ],
-                      "results": [            // List of brackets (three since this is double elimination)
-                            [                     // Winner bracket
-                                [[0, 1], [1, 0]],   // First round and results
-                                [[1, 0], [1, 0]]            // Second round
-                            ]
-                      ]
-                    }
-
-                 $('.brackets2').bracket({
-                    skipSecondaryFinal: false,
-                      init: data
-                 });
-            </script>
-            -->
 
     {% endif %}
 
