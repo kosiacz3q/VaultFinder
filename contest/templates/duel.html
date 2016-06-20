@@ -1,0 +1,23 @@
+{% extends 'form.html' %}
+
+{% block title %}Join overseer{% endblock %}
+
+{% block content %}
+
+<h1 class="fallout-font text-center" style="margin-top: 10%; margin-bottom: 8%">Duel result</h1>
+
+<form class="form-signin" method="post" action="">
+    {% csrf_token %}
+
+    <div class="row white-bg">
+
+        <div class="col-md-6">
+            <button class="btn btn-lg btn-primary btn-block" type="submit" value="player1" name="player1">{{ duel.player_1.first_name }} {{ duel.player_1.last_name }}</button>
+        </div>
+         <div class="col-md-6">
+            <button class="btn btn-lg btn-primary btn-block" type="submit" value="player2" name="player2">{{ duel.player_2.first_name }} {{ duel.player_2.last_name }}</button>
+         </div>
+    </div>
+</form>
+
+{% endblock %}
