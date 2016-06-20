@@ -18,7 +18,7 @@ class OverseerContestForm(forms.ModelForm):
 
     class Meta:
         model = OverseerContest
-        exclude = ['organizer', 'in_progress']
+        exclude = ['organizer', 'in_progress', 'round_number']
         widgets = {
             'date': DateTimePicker(options={"format": "YYYY-MM-DD HH:mm",
                                             "pickSeconds": False}),

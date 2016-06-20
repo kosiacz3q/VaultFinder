@@ -42,6 +42,8 @@
         </div>
     </div>
 
+    {% if overseer_contest.sponsors.count > 0 %}
+
     <h1 class="fallout-font">Sponsors</h1>
     <div class="white-bg" >
 
@@ -54,6 +56,12 @@
             {% endfor %}
         </div>
     </div>
+
+    {% endif %}
+
+
+    {% if user == overseer_contest.organizer or overseer_contest.in_progress == False%}
+
 
     <h1 class="fallout-font">Actions</h1>
     <div class="white-bg" >
@@ -72,6 +80,7 @@
         </div>
     </div>
 
+    {% endif %}
 
     <h1 class="fallout-font">Participants of Overseer contest</h1>
     <div class="white-bg">

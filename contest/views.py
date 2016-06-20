@@ -108,16 +108,20 @@ def update_duel(request, duel_id):
         return HttpResponse("You already fill!")
 
     if request.method == "POST":
-        form = DuelForm(request.POST, instance=duel)
-        if form.is_valid():
-            duel = form.save(commit=False)
-            duel.last_filled = request.user
-            duel.save()
-            return redirect('contest:index')
-    else:
-        form = DuelForm(instance=duel)
-    return render(request, 'create.html', {'form': form,
-                                           'label': 'Update duel'})
+
+        if not 'player1' in request.POST and not 'player2' in request.POST:
+            return HttpResponse("Invalid duel score!")
+
+        if 'player1' in request.POST:
+            duel.score = "1:0"
+        else:
+            duel.score = "0:1"
+
+        duel.last_filled = request.user
+        duel.save()
+        return redirect('contest:index')
+
+    return render(request, 'duel.html', {'duel': duel})
 
 
 def search(request):

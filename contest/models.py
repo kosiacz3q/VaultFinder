@@ -38,6 +38,7 @@ class OverseerContest(models.Model):
     limit = models.IntegerField()
     organizer = models.ForeignKey(settings.AUTH_USER_MODEL)
     in_progress = models.BooleanField(default=False)
+    round_number = models.IntegerField(default=0)
 
     def __str__(self):
         return "%s (%s)" % (self.name, self.description)
@@ -71,7 +72,7 @@ class Duel(models.Model):
     player_1 = models.ForeignKey(User, related_name="player_1")
     player_2 = models.ForeignKey(User, related_name="player_2")
     winner = models.ForeignKey(User, null=True, blank=True, related_name="winner")
-    score = models.CharField(max_length=5, null=False, default="0:0")
+    score = models.CharField(max_length=5, null=False, default="-")
     tracker = FieldTracker()
     last_filled = models.ForeignKey(User, related_name="last_filled", null=True, blank=True)
     next_duel = models.ForeignKey('self', related_name="later_duel", null=True, blank=True)
@@ -117,27 +118,51 @@ class Duel(models.Model):
     def random_matches(cls, participators, overseer_contest):
         new_round = Round()
         new_round.overseer_contest = overseer_contest
-        new_round.name = Round.objects.all().aggregate(Max('name'))['name__max'] + 1 if Round.objects.count() else 1
-        new_round.save()
-        seeded_teams = participators
 
-        for team in seeded_teams:
-            opponent = random.choice(participators)
-            duel = Duel.objects.create(round=new_round, player_1=team, player_2=opponent)
+        new_round.name = overseer_contest.round_number + 1
+        new_round.save()
+        contest_participators = participators
+
+        while len(contest_participators) > 1:
+            participant = random.choice(contest_participators)
+
+            while True:
+                opponent = random.choice(contest_participators)
+                if participant != opponent:
+                    break
+
+            match = Duel.objects.create(round=new_round,
+                                         player_1=participant,
+                                         player_2=opponent)
+
+            match.save()
+
             if new_round.name != 1:
-                Duel.objects.filter((Q(winner=opponent) | Q(winner=team)) & Q(round__name=new_round.name - 1)).update(
-                    next_duel=duel
-                )
-            participators.remove(opponent)
+                Duel.objects.filter((Q(winner=opponent) | Q(winner=participant)) & Q(round__name=new_round.name - 1)).update(next_match=match)
+
+            contest_participators.remove(opponent)
+            contest_participators.remove(participant)
+
+        if len(contest_participators) == 1:
+            free = contest_participators[0]
+            match = Duel.objects.create(round=new_round,
+                                        player_1=free,
+                                        player_2=free,
+                                        score="1:0",
+                                        winner=free)
+            match.save()
+
+        overseer_contest.round_number += 1
+        overseer_contest.save()
 
 
 def generate_overseer_bracket(sender, instance, created, **kwargs):
-    if created or instance.tracker.previous('score') == '0:0':
+    if created or instance.tracker.previous('score') == '-':
         return
 
     if instance.tracker.has_changed('score') and instance.last_filled:
         sender.objects.filter(pk=instance.pk).update(winner=None,
-                                                     score='0:0',
+                                                     score='-',
                                                      last_filled=None)
         return
 
@@ -160,6 +185,7 @@ def generate_overseer_bracket(sender, instance, created, **kwargs):
         new_round.overseer_contest = instance.round.overseer_contest
         new_round.name = instance.round.name + 1
         new_round.save()
+
         for player_1, player_2 in pairs:
             Duel.objects.create(round=new_round, player_1=player_1, player_2=player_2)
 
